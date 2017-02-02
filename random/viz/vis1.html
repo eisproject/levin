@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> LEVI | Visualizations </title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"content="This is a webpage about energy data visualisation at Lancaster University"/>
+  <meta name="keywords"content="Energy,Data,analysis,visualisation,Lancaster,Lancaster University"/>
+  <meta http-equiv="author"content="Energy Lancaster"/>
+  <meta http-equiv="content-language"content="en-us">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="http://www.w3schools.com/lib/w3.css">
+  <script src="http://d3plus.org/js/d3.js"></script>
+  <script src="http://d3plus.org/js/d3plus.js"></script>
+  <link rel="stylesheet" href="levi.css">
+</head>
+
+<body>
+  <!-- Navbar (always stay top) -->
+<div class="w3-top" id="main">
+<ul class="w3-navbar w3-indigo w3-wide w3-padding-4 w3-card-2 w3-animate-zoom">
+  <li>
+    <a href="landing.html" class="w3-margin-left  w3-center w3-margin-right w3-xlarge">
+    <b>LEVI</b> </a>
+  </li>
+  <!-- these links to the right. Hidden on small screens -->
+  <li class="w3-right w3-hide-small">
+    <a href="description.html#about" class="w3-left">About</a>
+    <a href="description.html#guide" class="w3-left">User Guide</a>
+    <a href="description.html#contact" class="w3-left w3-margin-right">Contact</a>
+
+  </li>
+</ul>
+</div>
+
+    <div class="w3-container w3-white" id="viz1" style="margin-top:64px;"></div>
+    <div class="w3-container w3-black w3-center" id="viz" style="height:600px; width:100vw; position:absolute"></div>
+
+      <script>
+        var fileName = "files/furness.csv"; //initialise DEFAULT fileName
+
+      //object array of possible different files
+        var files = [
+                {"value": "files/furness.csv", "text": "Furness"},
+                {"value": "files/fylde.csv", "text": "Fylde"},
+                {"value": "files/county.csv", "text": "County"},
+                {"value": "files/grizedale.csv", "text": "Grizedale"},
+                {"value": "files/pendle.csv", "text": "Pendle"},
+                {"value": "files/bowland.csv", "text": "Bowland"}
+                    ]
+
+      //function to create dropdown form
+        function make_dropdown(files){
+              var dropdown =d3plus.form()
+                                  .container("#viz1")
+                                  .data(files)
+                                  .id("value")
+                                  .text("text")
+                                  .width(100)
+                                  .title("Campus Area")
+                                  .focus("value", function(d){
+                                          fileName = d; //sets the fileName to the value of the current selected dropdown
+                                    console.log(d)
+                                  changeFiles(fileName) //update the changeFiles  function data point
+                                      })
+                                  .type("drop")
+                                  .draw()
+                  };
+                  make_dropdown(files); //call the make_dropdown function
+
+      // function to change file
+       function changeFiles(fileName){
+                     d3.csv(fileName, function(error, myData){   //load csv file
+                          if (error) {
+                        console.log("Error in Loading File");
+                      }
+                      myData.forEach(function(d) {
+                          d3.keys(d).forEach(function(k){
+                            if(k != "Type")
+                            if(k != "year")
+                            {
+                              d[k] = +d[k]  //convert from string to integer
+                            }
+                          })
+                        });
+                  make_viz(myData);     // call function for making d3+ visualisation to use the converted data
+        });
+      };
+        changeFiles(fileName);  //call the change files function
+
+
+      var  chart = d3plus.viz()
+                          .container("#viz")
+                          .type("bar")
+                          .tooltip(["Type"])
+                          .id("Type")
+                          .color("Type")
+                          .background("black")
+                          .margin(30)
+                          .font({"family": "Times"})
+                          .legend({"size": 50})
+                          .x("year")
+                          .y("current value")
+                          .title({
+                                  "value": "Energy Consumption On Campus",
+                                      "sub": "updating at half an hour interval",
+                                      "total": true
+                                  })
+                          .size("current value")
+                          .legend({
+                                    "order": {
+                                      "sort": "desc",
+                                      "value": "size"
+                                    }
+                                  })
+                          .ui([
+                            {
+                              "method" : "size",
+                              "type" : "drop",
+                              "value"  : [ "current value", "this month", "last month" ]
+                            },
+                            {
+                              "method" : "color",
+                              "type" : "drop",
+                              "value"  : ["Type","current value"]
+                            }
+                            ])
+                          .time("year")
+
+
+
+       function make_viz(myData){
+                    chart.data(myData).draw();
+                        };
+
+      </script>
+  </body>
+</html>
